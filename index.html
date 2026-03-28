@@ -1,0 +1,1224 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard Tasa Genérica 2026</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --clr-bg:       #f0f4f8;
+    --clr-surface:  #ffffff;
+    --clr-border:   #dde3ea;
+    --clr-text:     #1e2a38;
+    --clr-muted:    #5a6a7a;
+    --clr-faint:    #8a99a8;
+    --clr-accent1:  #1a73e8;   /* azul */
+    --clr-accent2:  #0f9d58;   /* verde */
+    --clr-accent3:  #f29900;   /* ámbar */
+    --clr-sim-bg:   #eef3f9;
+    --clr-header-from: #1a2f5e;
+    --clr-header-to:   #2d5fa6;
+  }
+  body { font-family: Arial, sans-serif; background: var(--clr-bg); color: var(--clr-text); min-height: 100vh; padding: 0; }
+
+  /* ── HEADER ── */
+  .page-header {
+    background: linear-gradient(135deg, var(--clr-header-from) 0%, var(--clr-header-to) 100%);
+    padding: 1.8rem 2rem 1.4rem;
+    margin-bottom: 1.5rem;
+    position: relative;
+    overflow: hidden;
+  }
+  .page-header::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+  }
+  .page-header h1 { font-size: 24px; font-weight: 700; color: #fff; margin-bottom: 4px; position: relative; }
+  .page-header .sub { font-size: 13px; color: rgba(255,255,255,0.75); margin-bottom: 0; position: relative; }
+
+  .page-body { padding: 0 2rem 2rem; }
+
+  .section-title {
+    font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em;
+    margin-bottom: 10px; display: flex; align-items: center; gap: 8px; color: var(--clr-accent1);
+  }
+  .section-title::after {
+    content: ''; flex: 1; height: 1px; background: linear-gradient(90deg, #c8d8f0 0%, transparent 100%);
+  }
+
+  /* ── KPIs + SIM ── */
+  .kpi-sim-wrapper { margin-bottom: 1.5rem; }
+  .kpi-sim-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+  .sim-reset {
+    font-size: 12px; padding: 6px 16px; border: none; border-radius: 20px;
+    background: linear-gradient(135deg, #e8f0fe, #d2e3fc); color: var(--clr-accent1);
+    cursor: pointer; font-family: Arial, sans-serif; font-weight: 600;
+    box-shadow: 0 1px 3px rgba(26,115,232,0.2);
+  }
+  .sim-reset:hover { background: linear-gradient(135deg, #d2e3fc, #c0d3f8); }
+
+  /* Grids sincronizados — misma estructura de columnas */
+  .kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+    margin-bottom: 4px;
+  }
+  .sim-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+  }
+  /* Tasa por sector: 5 columnas */
+  .tasa-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 10px;
+    margin-bottom: 4px;
+  }
+  .tasa-sim-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 10px;
+    margin-bottom: 1.5rem;
+  }
+
+  /* KPI card */
+  .kpi {
+    background: var(--clr-surface);
+    border-radius: 10px 10px 0 0;
+    padding: 14px 16px 10px;
+    border: 1px solid var(--clr-border);
+    border-bottom: none;
+    display: flex; flex-direction: column;
+    border-top: 3px solid var(--clr-accent1);
+    box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+  }
+  .kpi-label { font-size: 12px; color: var(--clr-muted); margin-bottom: 6px; line-height: 1.4; font-weight: 600; }
+  .kpi-val { font-size: 24px; font-weight: 700; color: var(--clr-text); margin-bottom: 8px; }
+  .kpi-val.green { color: #0f9d58; }
+  .kpi-val.amber { color: #e37400; }
+  .kpi-formula { font-size: 10px; color: var(--clr-faint); border-top: 1px dashed var(--clr-border); padding-top: 6px; line-height: 1.5; font-style: italic; }
+
+  /* SIM card */
+  .sim-card {
+    background: var(--clr-sim-bg);
+    border: 1px solid var(--clr-border);
+    border-top: 2px dashed #b8cce8;
+    border-radius: 0 0 10px 10px;
+    padding: 10px 16px 12px;
+    display: flex; flex-direction: column; gap: 5px; min-height: 90px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.04);
+  }
+  .sim-card.empty { background: transparent; border: none; min-height: 0; padding: 0; box-shadow: none; }
+  .sim-card-label {
+    font-size: 10px; font-weight: 700; color: var(--clr-accent1);
+    text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 2px;
+  }
+  .sim-row { display: flex; align-items: baseline; gap: 4px; flex-wrap: wrap; }
+  .sim-orig { font-size: 13px; color: var(--clr-faint); text-decoration: line-through; }
+  .sim-arrow { font-size: 11px; color: var(--clr-faint); }
+  .sim-new { font-size: 18px; font-weight: 700; }
+  .sim-new.green { color: #0f9d58; }
+  .sim-new.amber { color: #e37400; }
+  .sim-new.blue  { color: #1a73e8; }
+  .sim-badges { display: flex; align-items: center; gap: 4px; flex-wrap: wrap; }
+  .badge { font-size: 11px; padding: 2px 8px; border-radius: 20px; font-weight: 700; display: inline-flex; align-items: center; gap: 2px; }
+  .badge.good    { background: #d4edda; color: #155724; }
+  .badge.bad     { background: #f8d7da; color: #721c24; }
+  .badge.neutral { background: #e2ecf8; color: #3a5a8a; }
+  .sim-formula { font-size: 10px; color: var(--clr-faint); font-style: italic; }
+
+  /* INPUTS */
+  .inputs-section { margin-bottom: 1.5rem; }
+  .inputs-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; margin-bottom: 14px; }
+  .params-chart-wrapper .inputs-grid { grid-template-columns: 1fr; }
+  .input-card {
+    background: var(--clr-surface); border: 1px solid var(--clr-border);
+    border-radius: 10px; padding: 12px 14px;
+    border-left: 4px solid var(--clr-accent1);
+    box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+  }
+  .input-label { font-size: 11px; color: var(--clr-accent1); margin-bottom: 6px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; }
+  .input-row { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+  .input-row input[type=number] {
+    width: 90px; padding: 5px 8px; font-size: 14px; font-weight: 600;
+    border: 1px solid #b8cce8; border-radius: 6px;
+    background: #eef3f9; color: var(--clr-text); font-family: Arial, sans-serif;
+  }
+  .input-row input[type=number]:focus { outline: none; border-color: var(--clr-accent1); background: #fff; }
+  .input-unit { font-size: 12px; color: var(--clr-muted); }
+  .input-formula { font-size: 10px; color: var(--clr-faint); font-style: italic; line-height: 1.5; margin-bottom: 8px; }
+  .input-orig { font-size: 10px; color: var(--clr-faint); margin-bottom: 6px; }
+  .input-orig span { font-weight: 700; color: var(--clr-muted); }
+  .btn-modify {
+    font-size: 11px; padding: 4px 12px; border: none; border-radius: 20px;
+    background: linear-gradient(135deg, #0f9d58, #34a853); color: #fff;
+    cursor: pointer; font-family: Arial, sans-serif; font-weight: 700;
+    box-shadow: 0 1px 3px rgba(15,157,88,0.3);
+  }
+  .btn-modify:hover { background: linear-gradient(135deg, #0b8a4c, #2d9248); }
+  .btn-modify:disabled { opacity: 0.3; cursor: not-allowed; background: #ccc; box-shadow: none; }
+
+  /* PARAMS + CHART LAYOUT */
+  .params-chart-wrapper {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1.4fr;
+    gap: 0 16px;
+    align-items: stretch;
+    margin-bottom: 1.5rem;
+  }
+  .params-chart-wrapper .inputs-section {
+    margin-bottom: 0;
+    display: flex;
+    flex-direction: column;
+  }
+  /* Make param cards look like KPI+SIM stacked cards */
+  .params-chart-wrapper .inputs-section {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+  }
+  .params-chart-wrapper .input-card {
+    border-radius: 10px 10px 0 0;
+    border-top: 3px solid var(--clr-accent1);
+    border-bottom: none;
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    margin-bottom: 0;
+  }
+  .params-chart-wrapper .input-card .input-formula { flex: 1; }
+  .params-chart-wrapper .inputs-grid { grid-template-columns: 1fr; }
+  /* Faux sim-card bottom for param cards */
+  .param-sim-bottom {
+    background: var(--clr-sim-bg);
+    border: 1px solid var(--clr-border);
+    border-top: 2px dashed #b8cce8;
+    border-radius: 0 0 10px 10px;
+    padding: 8px 14px 10px;
+    font-size: 10px; color: var(--clr-faint); font-style: italic;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.04);
+    margin-top: 0;
+  }
+
+  /* 3D STACKED BAR CHART */
+  .sector-chart-card {
+    background: var(--clr-surface);
+    border: 1px solid var(--clr-border);
+    border-top: 3px solid var(--clr-accent1);
+    border-radius: 10px;
+    padding: 12px 14px 10px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+    display: flex;
+    flex-direction: column;
+  }
+  .sector-chart-title {
+    font-size: 11px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 0.07em; color: var(--clr-accent1);
+    margin-bottom: 8px; display: flex; align-items: center; gap: 8px;
+  }
+  .sector-chart-title::after {
+    content: ''; flex: 1; height: 1px;
+    background: linear-gradient(90deg, #c8d8f0 0%, transparent 100%);
+  }
+  .bar-row {
+    display: flex; align-items: center; gap: 6px;
+    margin-bottom: 5px;
+  }
+  .bar-label {
+    font-size: 11px; font-weight: 600; color: var(--clr-muted);
+    width: 80px; flex-shrink: 0; text-align: right;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .bar-track {
+    flex: 1; height: 20px; position: relative; border-radius: 4px;
+    background: #f0f4f8; overflow: visible;
+    display: flex; align-items: center;
+  }
+  /* 3D effect: base segment */
+  .bar-seg {
+    height: 100%;
+    position: relative;
+    transition: width 0.5s cubic-bezier(.4,0,.2,1);
+    display: flex; align-items: center; justify-content: flex-end;
+  }
+  .bar-seg::after {
+    /* top face 3D illusion */
+    content: '';
+    position: absolute; top: -4px; right: -3px;
+    width: 100%; height: 4px;
+    transform-origin: bottom left;
+    transform: skewX(-30deg);
+    opacity: 0.6;
+    border-radius: 2px 2px 0 0;
+  }
+  .bar-seg::before {
+    /* right face 3D illusion */
+    content: '';
+    position: absolute; top: -4px; right: -3px;
+    width: 3px; height: calc(100% + 4px);
+    opacity: 0.55;
+    border-radius: 0 2px 2px 0;
+  }
+  .bar-seg-base { border-radius: 4px 0 0 4px; }
+  .bar-seg-base:last-child { border-radius: 4px; }
+  .bar-seg-diff {
+    border-radius: 0 4px 4px 0;
+    opacity: 0.85;
+  }
+  .bar-seg-diff.positive { /* more people → amber */ }
+  .bar-seg-diff.negative { /* fewer people → red tint */ }
+  .bar-val {
+    font-size: 11px; font-weight: 700; color: var(--clr-text);
+    white-space: nowrap; min-width: 36px;
+    text-align: left; padding-left: 6px; flex-shrink: 0;
+  }
+  .bar-diff-badge {
+    font-size: 10px; font-weight: 700; padding: 1px 6px;
+    border-radius: 10px; min-width: 28px; text-align: center; flex-shrink: 0;
+  }
+  .bar-diff-badge.pos { background: #fff3cd; color: #856404; }
+  .bar-diff-badge.neg { background: #f8d7da; color: #721c24; }
+  .bar-diff-badge.zero { background: #e2ecf8; color: #3a5a8a; }
+  .chart-legend {
+    display: flex; gap: 10px; flex-wrap: wrap;
+    margin-top: 6px; padding-top: 6px;
+    border-top: 1px dashed var(--clr-border);
+  }
+  .chart-legend-item {
+    display: flex; align-items: center; gap: 5px;
+    font-size: 10px; color: var(--clr-muted);
+  }
+  .chart-legend-dot {
+    width: 10px; height: 10px; border-radius: 2px; flex-shrink: 0;
+  }
+  @media (max-width: 900px) {
+    .params-chart-wrapper { grid-template-columns: 1fr; }
+  }
+
+  /* PROD GRID */
+  .prod-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(185px, 1fr)); gap: 8px; }
+  .prod-card { background: var(--clr-surface); border: 1px solid var(--clr-border); border-radius: 10px; padding: 10px 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+  .prod-header { display: flex; align-items: center; gap: 6px; margin-bottom: 6px; }
+  .prod-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+  .prod-name { font-size: 12px; font-weight: 700; color: var(--clr-text); }
+  .prod-input-row { display: flex; align-items: center; gap: 6px; margin-bottom: 5px; }
+  .prod-input-row input[type=number] {
+    flex: 1; min-width: 0; padding: 4px 8px; font-size: 12px; font-weight: 600;
+    border: 1px solid #b8cce8; border-radius: 6px; background: #eef3f9;
+    color: var(--clr-text); font-family: Arial, sans-serif;
+  }
+  .prod-input-row input[type=number]:focus { outline: none; border-color: var(--clr-accent1); background: #fff; }
+  .prod-unit { font-size: 11px; color: var(--clr-muted); white-space: nowrap; }
+  .prod-footer { display: flex; align-items: center; justify-content: space-between; }
+  .prod-orig { font-size: 10px; color: var(--clr-faint); }
+  .prod-orig span { font-weight: 700; }
+
+  /* LEGEND + ITEMS */
+  .legend { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--clr-muted); margin-bottom: 10px; }
+  .legend svg { width: 14px; height: 18px; }
+  .items-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 1.5rem; }
+  .sector-sep {
+    font-size: 12px; font-weight: 700; color: #fff;
+    padding: 8px 14px 8px; display: flex; align-items: center; gap: 8px;
+    background: linear-gradient(90deg, #1a2f5e 0%, #2d5fa6 60%, transparent 100%);
+    border-radius: 6px; margin-bottom: 2px;
+  }
+  .sector-sep .sdot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; }
+  .item-card {
+    background: var(--clr-surface); border: 1px solid var(--clr-border);
+    border-radius: 10px; overflow: hidden;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+  }
+  .item-header { display: flex; align-items: center; gap: 10px; padding: 10px 14px 8px; }
+  .item-sector-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+  .item-name { font-size: 13px; font-weight: 600; color: var(--clr-text); flex: 1; }
+  .item-meta { font-size: 11px; color: var(--clr-faint); background: #eef3f9; padding: 1px 6px; border-radius: 10px; }
+  .item-active-count { font-size: 12px; font-weight: 700; min-width: 80px; text-align: right; }
+  .persons-row { display: flex; flex-wrap: wrap; gap: 5px; padding: 4px 14px 12px; background: #fafcff; border-top: 1px solid #eef3f9; }
+  .person-btn { width: 28px; height: 36px; background: none; border: none; cursor: pointer; padding: 0; border-radius: 4px; transition: transform 0.15s, opacity 0.2s; }
+  .person-btn:hover { transform: scale(1.18); }
+  .person-btn.off { opacity: 0.2; }
+  .person-btn.extra { outline: 2px dashed #f29900; outline-offset: 1px; border-radius: 4px; }
+  .person-btn svg { width: 20px; height: 26px; display: block; margin: 0 auto; }
+  .item-controls { display: flex; align-items: center; gap: 6px; padding: 4px 14px 8px; background: #fafcff; }
+  .ctrl-btn {
+    width: 26px; height: 26px; border-radius: 50%; border: none; cursor: pointer;
+    font-size: 16px; font-weight: 700; line-height: 1;
+    display: flex; align-items: center; justify-content: center;
+    transition: transform 0.12s, opacity 0.2s;
+  }
+  .ctrl-btn:hover { transform: scale(1.12); }
+  .ctrl-btn.add  { background: #1a73e8; color: #fff; }
+  .ctrl-btn.rem  { background: #f29900; color: #fff; }
+  .ctrl-btn:disabled { opacity: 0.25; cursor: not-allowed; transform: none; }
+  .ctrl-label { font-size: 11px; color: #5a6a7a; }
+  .ctrl-extra { font-size: 11px; font-weight: 700; color: #f29900; min-width: 14px; text-align: center; }
+
+  /* RATES TABLE */
+  .rates-table { width: 100%; border-collapse: collapse; background: var(--clr-surface); border-radius: 12px; overflow: hidden; border: 1px solid var(--clr-border); margin-bottom: 1.5rem; font-size: 13px; box-shadow: 0 2px 8px rgba(0,0,0,0.07); }
+  .rates-table th {
+    font-size: 11px; color: #fff; text-align: right; padding: 10px 14px;
+    background: linear-gradient(135deg, var(--clr-header-from), var(--clr-header-to));
+    font-weight: 700; letter-spacing: 0.04em;
+  }
+  .rates-table th:first-child { text-align: left; }
+  .rates-table td { text-align: right; padding: 10px 14px; border-bottom: 1px solid #eef3f9; color: var(--clr-text); }
+  .rates-table td:first-child { text-align: left; font-weight: 600; }
+  .rates-table tr:last-child td { border-bottom: none; }
+  .rates-table tr:hover td { background: #f5f8ff; }
+  .rates-table .total-row td { font-weight: 700; background: linear-gradient(90deg, #eef3f9, #e8f0fe); }
+  .dot { display: inline-block; width: 9px; height: 9px; border-radius: 50%; margin-right: 6px; }
+
+  @media (max-width: 900px) {
+    .kpi-grid, .sim-grid { grid-template-columns: repeat(2, 1fr); }
+    .tasa-grid, .tasa-sim-grid { grid-template-columns: repeat(3, 1fr); }
+  }
+  @media (max-width: 600px) {
+    .kpi-grid, .sim-grid, .tasa-grid, .tasa-sim-grid { grid-template-columns: 1fr 1fr; }
+  }
+
+  footer {
+    font-size: 11px; color: var(--clr-faint); text-align: center; margin-top: 2rem;
+    padding: 1rem; background: var(--clr-surface); border-top: 1px solid var(--clr-border);
+  }
+
+
+  /* ── LOGIN ── */
+  #login-screen {
+    position: fixed; inset: 0; z-index: 9999;
+    background: linear-gradient(135deg, #1a2f5e 0%, #2d5fa6 60%, #1a73e8 100%);
+    display: flex; align-items: center; justify-content: center;
+    font-family: Arial, sans-serif;
+  }
+  #login-screen::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none'%3E%3Cg fill='%23ffffff' fill-opacity='0.05'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+  }
+  .login-card {
+    background: rgba(255,255,255,0.97);
+    border-radius: 20px;
+    padding: 2.5rem 2.5rem 2rem;
+    width: 100%; max-width: 360px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.35);
+    position: relative;
+    text-align: center;
+  }
+  .login-icon {
+    width: 72px; height: 72px;
+    background: linear-gradient(135deg, #1a2f5e, #2d5fa6);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    margin: 0 auto 1.2rem;
+    box-shadow: 0 6px 20px rgba(26,47,94,0.35);
+  }
+  .login-icon svg { width: 38px; height: 38px; }
+  .login-title { font-size: 20px; font-weight: 700; color: #1a2f5e; margin-bottom: 4px; }
+  .login-sub { font-size: 12px; color: #5a6a7a; margin-bottom: 1.6rem; }
+  .login-label {
+    font-size: 11px; font-weight: 700; color: #1a2f5e;
+    text-transform: uppercase; letter-spacing: 0.06em;
+    text-align: left; display: block; margin-bottom: 6px;
+  }
+  .login-input-wrap { position: relative; margin-bottom: 1rem; }
+  .login-input {
+    width: 100%; padding: 11px 42px 11px 14px;
+    font-size: 15px; font-family: Arial, sans-serif;
+    border: 1.5px solid #b8cce8; border-radius: 10px;
+    background: #eef3f9; color: #1e2a38;
+    outline: none; transition: border-color 0.2s, background 0.2s;
+    letter-spacing: 0.12em;
+  }
+  .login-input:focus { border-color: #1a73e8; background: #fff; }
+  .login-input.error { border-color: #e53935; background: #fff5f5; animation: shake 0.35s; }
+  @keyframes shake {
+    0%,100%{ transform: translateX(0) } 20%{ transform: translateX(-6px) }
+    40%{ transform: translateX(6px) } 60%{ transform: translateX(-4px) } 80%{ transform: translateX(4px) }
+  }
+  .login-eye {
+    position: absolute; right: 12px; top: 50%; transform: translateY(-50%);
+    background: none; border: none; cursor: pointer; color: #8a99a8; padding: 2px;
+  }
+  .login-btn {
+    width: 100%; padding: 12px;
+    background: linear-gradient(135deg, #1a2f5e, #2d5fa6);
+    color: #fff; font-size: 14px; font-weight: 700;
+    border: none; border-radius: 10px; cursor: pointer;
+    font-family: Arial, sans-serif; letter-spacing: 0.05em;
+    box-shadow: 0 4px 14px rgba(26,47,94,0.35);
+    transition: opacity 0.2s;
+  }
+  .login-btn:hover { opacity: 0.9; }
+  .login-error {
+    font-size: 12px; color: #e53935; margin-top: 8px;
+    min-height: 18px; font-weight: 600;
+  }
+  .login-footer { font-size: 11px; color: #8a99a8; margin-top: 1.4rem; }
+  #dashboard-content { display: none; }
+
+</style>
+</head>
+<body>
+
+
+<div id="login-screen">
+  <div class="login-card">
+    <div class="login-icon">
+      <!-- Icono mano de obra / trabajador -->
+      <svg viewBox="0 0 38 38" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <!-- cabeza -->
+        <circle cx="19" cy="10" r="6" fill="#fff"/>
+        <!-- cuerpo con casco de obra -->
+        <path d="M8 32c0-6.075 4.925-11 11-11s11 4.925 11 11" stroke="#fff" stroke-width="2.5" stroke-linecap="round"/>
+        <!-- casco -->
+        <path d="M13 10.5 C13 7 16 5 19 5 C22 5 25 7 25 10.5" fill="#f29900"/>
+        <rect x="11.5" y="10" width="15" height="2.5" rx="1.25" fill="#f29900"/>
+        <!-- maletín / herramienta -->
+        <rect x="23" y="22" width="9" height="7" rx="2" fill="#fff" fill-opacity="0.85"/>
+        <path d="M25 22v-1.5a2 2 0 0 1 4 0V22" stroke="#fff" stroke-width="1.5" stroke-linecap="round"/>
+        <line x1="23" y1="25.5" x2="32" y2="25.5" stroke="#f29900" stroke-width="1.2"/>
+      </svg>
+    </div>
+    <div class="login-title">Tasa Genérica 2026</div>
+    <div class="login-sub">Control de Gestión · Acceso restringido</div>
+    <label class="login-label" for="login-pass">Contraseña</label>
+    <div class="login-input-wrap">
+      <input class="login-input" type="password" id="login-pass" placeholder="••••••••" autocomplete="current-password">
+      <button class="login-eye" id="login-eye-btn" tabindex="-1" title="Mostrar/ocultar">
+        <svg id="eye-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>
+        </svg>
+      </button>
+    </div>
+    <button class="login-btn" id="login-btn">Ingresar →</button>
+    <div class="login-error" id="login-error"></div>
+    <div class="login-footer">Preparado por: <strong>Martín Leiva</strong></div>
+  </div>
+</div>
+
+<div id="dashboard-content">
+<div class="page-header">
+  <h1>Tasa Genérica 2026</h1>
+  <p class="sub">Genéricos — Aperturados por Sector · Editá días, toneladas y personas para simular escenarios</p>
+  <p style="font-size:12px;color:rgba(255,255,255,0.55);margin-top:8px;position:relative;">Preparado por: <strong style="color:rgba(255,255,255,0.85)">Martín Leiva</strong> — Control de Gestión</p>
+</div>
+<div class="page-body">
+
+<!-- KPIs + SIM alineados -->
+<div class="kpi-sim-wrapper">
+  <div class="kpi-sim-header">
+    <span class="section-title" style="margin-bottom:0">Valores originales + Simulación</span>
+    <button class="sim-reset" id="btn-reset">↺ Valor inicial</button>
+  </div>
+
+  <!-- Fila KPIs -->
+  <div class="kpi-grid">
+    <div class="kpi">
+      <div class="kpi-label">Total Genérico</div>
+      <div class="kpi-val green" id="kpi-gen">65</div>
+      <div class="kpi-formula" id="f-gen">Σ personas del plan 2026 (fijo)</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-label">Total Hs. Hombre Genéricas</div>
+      <div class="kpi-val" id="kpi-hh">124.800</div>
+      <div class="kpi-formula" id="f-hh">65 pers × 240 días × 8 hs = 124.800 hs</div>
+    </div>
+
+    <div class="kpi">
+      <div class="kpi-label">Dotación Total MOD</div>
+      <div class="kpi-val" id="kpi-mod">400</div>
+      <div class="kpi-formula" id="f-mod">Dato fijo del plan 2026</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-label">Incidencia s/Dotación MOD</div>
+      <div class="kpi-val" id="kpi-incid">16,3%</div>
+      <div class="kpi-formula" id="f-incid">65 pers ÷ 400 MOD = 16,3%</div>
+    </div>
+  </div>
+
+  <!-- Fila SIM — alineada debajo de cada KPI -->
+  <div class="sim-grid">
+    <!-- Total Genérico simulado -->
+    <div class="sim-card" id="sc-gen">
+      <div class="sim-card-label">Simulado</div>
+      <div class="sim-row">
+        <span class="sim-orig" id="s-orig-gen">65</span>
+        <span class="sim-arrow">→</span>
+        <span class="sim-new green" id="s-sim-gen">65</span>
+      </div>
+      <div class="sim-badges">
+        <span class="badge neutral" id="s-delta-gen">= 0</span>
+        <span class="badge neutral" id="s-pct-gen">0,0%</span>
+      </div>
+      <div class="sim-formula" id="s-f-gen">Σ personas activas</div>
+    </div>
+    <!-- Hs. Hombre simulado -->
+    <div class="sim-card" id="sc-hh">
+      <div class="sim-card-label">Simulado</div>
+      <div class="sim-row">
+        <span class="sim-orig" id="s-orig-hh">124.800</span>
+        <span class="sim-arrow">→</span>
+        <span class="sim-new blue" id="s-sim-hh">124.800</span>
+      </div>
+      <div class="sim-badges">
+        <span class="badge neutral" id="s-delta-hh">= 0</span>
+        <span class="badge neutral" id="s-pct-hh">0,0%</span>
+      </div>
+      <div class="sim-formula" id="s-f-hh">65 × 240 × 8</div>
+    </div>
+
+    <!-- MOD simulado -->
+    <div class="sim-card" id="sc-mod">
+      <div class="sim-card-label">Simulado</div>
+      <div class="sim-row">
+        <span class="sim-orig" id="s-orig-mod">400</span>
+        <span class="sim-arrow">→</span>
+        <span class="sim-new blue" id="s-sim-mod">400</span>
+      </div>
+      <div class="sim-badges">
+        <span class="badge neutral" id="s-delta-mod">= 0</span>
+        <span class="badge neutral" id="s-pct-mod">0,0%</span>
+      </div>
+      <div class="sim-formula" id="s-f-mod">Dotación MOD editable</div>
+    </div>
+    <!-- Incidencia simulada -->
+    <div class="sim-card" id="sc-incid">
+      <div class="sim-card-label">Simulado</div>
+      <div class="sim-row">
+        <span class="sim-orig" id="s-orig-incid">16,3%</span>
+        <span class="sim-arrow">→</span>
+        <span class="sim-new blue" id="s-sim-incid">16,3%</span>
+      </div>
+      <div class="sim-badges">
+        <span class="badge neutral" id="s-delta-incid">= 0</span>
+        <span class="badge neutral" id="s-pct-incid">0,0%</span>
+      </div>
+      <div class="sim-formula" id="s-f-incid">pers activas ÷ MOD</div>
+    </div>
+  </div>
+</div>
+
+<!-- TASA CUOTA POR SECTOR -->
+<div class="kpi-sim-wrapper" style="margin-bottom:1.5rem">
+  <div class="kpi-sim-header">
+    <span class="section-title" style="margin-bottom:0">Tasa Cuota por Sector (Hs/Tn)</span>
+  </div>
+  <div class="tasa-grid" id="tasa-kpi-grid">
+    <!-- renderizado por JS -->
+  </div>
+  <div class="tasa-sim-grid" id="tasa-sim-grid">
+    <!-- renderizado por JS -->
+  </div>
+</div>
+<!-- PARÁMETROS EDITABLES + GRÁFICO -->
+<div class="kpi-sim-header" style="margin-bottom:8px">
+  <span class="section-title" style="margin-bottom:0">Parámetros editables + Activos por Sector</span>
+</div>
+<div class="params-chart-wrapper">
+  <div class="inputs-section">
+    <div class="input-card">
+      <div class="input-label">Días hábiles anuales</div>
+      <div class="input-row">
+        <input type="number" id="inp-dias" value="240" min="1" max="365" step="1">
+        <span class="input-unit">días × 8 hs/día</span>
+      </div>
+      <div class="input-formula">Hs anuales = días × 8 · Afecta Hs. Hombre y todas las tasas</div>
+    </div>
+    <div class="param-sim-bottom">
+      Valor original: <span id="orig-label-dias" style="font-weight:700;color:var(--clr-muted)">240</span> días &nbsp;·&nbsp;
+      <button class="btn-modify" id="btn-mod-dias" disabled style="vertical-align:middle">✓ Modificar original</button>
+    </div>
+  </div>
+
+  <div class="inputs-section">
+    <div class="input-card">
+      <div class="input-label">Dotación Total MOD</div>
+      <div class="input-row">
+        <input type="number" id="inp-mod" value="400" min="1" step="1">
+        <span class="input-unit">personas</span>
+      </div>
+      <div class="input-formula">Afecta Incidencia s/Dotación MOD</div>
+    </div>
+    <div class="param-sim-bottom">
+      Valor original: <span id="orig-label-mod" style="font-weight:700;color:var(--clr-muted)">400</span> personas &nbsp;·&nbsp;
+      <button class="btn-modify" id="btn-mod-mod" disabled style="vertical-align:middle">✓ Modificar original</button>
+    </div>
+  </div>
+
+  <!-- GRÁFICO DE BARRAS HORIZONTALES 3D APILADAS POR SECTOR -->
+  <div class="sector-chart-card">
+    <div class="sector-chart-title">Activos por Sector</div>
+    <div id="sector-bar-chart"></div>
+    <div class="chart-legend">
+      <div class="chart-legend-item">
+        <div class="chart-legend-dot" style="background:#1a73e8"></div>
+        <span>Activos base</span>
+      </div>
+      <div class="chart-legend-item">
+        <div class="chart-legend-dot" style="background:#f29900"></div>
+        <span>Diferencia (+)</span>
+      </div>
+      <div class="chart-legend-item">
+        <div class="chart-legend-dot" style="background:#e53935"></div>
+        <span>Diferencia (−)</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="inputs-section" style="margin-bottom:1.5rem">
+  <div class="section-title">Producción por sector (tn) — editable</div>
+  <div class="prod-grid" id="prod-grid"></div>
+</div>
+
+<!-- PERSONAS -->
+<div class="section-title">Detalle por ítem — clic individual en cada persona</div>
+<div class="legend">
+  <svg viewBox="0 0 14 18" fill="#1D9E75"><ellipse cx="7" cy="4.5" rx="3.5" ry="3.5"/><path d="M1 17c0-3.5 2.5-6 6-6s6 2.5 6 6z"/></svg> activa &nbsp;·&nbsp;
+  <svg viewBox="0 0 14 18" fill="#b4b2a9"><ellipse cx="7" cy="4.5" rx="3.5" ry="3.5"/><path d="M1 17c0-3.5 2.5-6 6-6s6 2.5 6 6z"/></svg> inactiva
+</div>
+<div class="items-list" id="items-list"></div>
+
+<div class="section-title">Tasas a cargar por sector — Año 2026</div>
+<table class="rates-table">
+  <thead><tr>
+    <th>Sector</th><th>Activos</th><th>Hs/año</th><th>Hs. Hombre</th><th>Producción (tn)</th><th>Tasa cuota (Hs/Tn)</th><th>Tasa a cargar (tn/hs)</th>
+  </tr></thead>
+  <tbody id="rates-body"></tbody>
+</table>
+
+</div>
+<footer>Dashboard Tasa Genérica 2026 &mdash; Datos: Base_Generico.xlsx</footer>
+</div><!-- /dashboard-content -->
+
+<script>
+let ORIG = { gen: 65, dias: 240, mod: 400,
+  prod: { GEN0100: 32374, GEN0300: 13415.25, GEN0400: 3940.83, GEN0500: 7692.97, GEN0600: 0 } };
+const FACTORY = { gen: 65, dias: 240, mod: 400,
+  prod: { GEN0100: 32374, GEN0300: 13415.25, GEN0400: 3940.83, GEN0500: 7692.97, GEN0600: 0 } };
+
+const SECTORES = {
+  GEN0100: { name: 'General',      color: '#1D9E75' },
+  GEN0300: { name: 'Moldeo',       color: '#378ADD' },
+  GEN0400: { name: 'Confitado',    color: '#BA7517' },
+  GEN0500: { name: 'Bañado',       color: '#D4537E' },
+  GEN0600: { name: 'Industriales', color: '#7F77DD' },
+};
+const prodCurrent = { ...ORIG.prod };
+
+const ITEMS_RAW = [
+  { id: 1,  nombre: 'Delegados',                     sector: 'GEN0100', qty: 12 },
+  { id: 5,  nombre: 'Personal Calidad',               sector: 'GEN0100', qty: 17 },
+  { id: 2,  nombre: 'Aduaneros',                      sector: 'GEN0100', qty: 6  },
+  { id: 12, nombre: 'Lavadero de piezas',             sector: 'GEN0100', qty: 3  },
+  { id: 13, nombre: 'Sala esencias',                  sector: 'GEN0100', qty: 3  },
+  { id: 17, nombre: 'Controlador de BPM - Edilicio', sector: 'GEN0100', qty: 3  },
+  { id: 7,  nombre: 'Industria 4.0',                  sector: 'GEN0100', qty: 2  },
+  { id: 4,  nombre: '5S Planta',                      sector: 'GEN0100', qty: 1  },
+  { id: 6,  nombre: 'Centro de Masa',                 sector: 'GEN0500', qty: 3  },
+  { id: 11, nombre: 'Reprocesador en línea (Bañado)', sector: 'GEN0500', qty: 3  },
+  { id: 14, nombre: 'Operador - Autolevador',         sector: 'GEN0400', qty: 3  },
+  { id: 15, nombre: 'Lider Confitado',                sector: 'GEN0400', qty: 3  },
+  { id: 16, nombre: 'Refuerzo mezclador',             sector: 'GEN0400', qty: 3  },
+  { id: 3,  nombre: 'Lavadero de moldes',             sector: 'GEN0300', qty: 3  },
+];
+const sectorTotals = {};
+Object.keys(SECTORES).forEach(s => sectorTotals[s] = 0);
+ITEMS_RAW.forEach(i => sectorTotals[i.sector] += i.qty);
+const sectorOrder = Object.keys(SECTORES).sort((a,b) => sectorTotals[b]-sectorTotals[a]);
+const ITEMS = [...ITEMS_RAW].sort((a,b)=>{
+  const si=sectorOrder.indexOf(a.sector),sj=sectorOrder.indexOf(b.sector);
+  return si!==sj?si-sj:b.qty-a.qty;
+});
+const state = {};
+const extraState = {}; // extra persons added per item (max 3)
+const MAX_EXTRA = 3;
+ITEMS.forEach(item => {
+  state[item.id] = Array(item.qty).fill(true);
+  extraState[item.id] = 0;
+});
+
+const $ = id => document.getElementById(id);
+function getDias(){ return parseInt($('inp-dias').value)||ORIG.dias; }
+function getMOD() { return parseInt($('inp-mod').value)||ORIG.mod; }
+function activeCount(item){ return state[item.id].filter(Boolean).length + (extraState[item.id]||0); }
+function fmtAR(n,dec){ return n.toLocaleString('es-AR',{minimumFractionDigits:dec||0,maximumFractionDigits:dec||0}); }
+function personSVG(color){ return `<svg viewBox="0 0 14 18" fill="${color}"><ellipse cx="7" cy="4.5" rx="3.5" ry="3.5"/><path d="M1 17c0-3.5 2.5-6 6-6s6 2.5 6 6z"/></svg>`; }
+
+// good/bad: gen/HH/incid → up=good; tasa → up=bad (invertir=true)
+function bCls(sim,orig,inv){
+  const d=sim-orig;
+  if(Math.abs(d)<0.00001) return 'neutral';
+  const up=d>0;
+  return inv?(up?'bad':'good'):(up?'good':'bad');
+}
+function arrow(cls){ return cls==='good'?'↑ ':cls==='bad'?'↓ ':''; }
+function dlbl(sim,orig,dec){
+  const d=sim-orig;
+  if(Math.abs(d)<0.00001) return '= 0';
+  return (d>0?'+':'')+fmtAR(parseFloat(d.toFixed(dec||0)),dec||0);
+}
+function plbl(sim,orig){
+  if(Math.abs(orig)<0.00001) return '—';
+  const pct=(sim-orig)/Math.abs(orig)*100;
+  if(Math.abs(pct)<0.001) return '0,0%';
+  return (pct>0?'+':'')+pct.toFixed(1).replace('.',',')+' %';
+}
+function setBadge(deltaId,pctId,sim,orig,dec,inv){
+  const cls=bCls(sim,orig,inv);
+  const de=$(deltaId); de.className='badge '+cls; de.textContent=arrow(cls)+dlbl(sim,orig,dec);
+  const pe=$(pctId);   pe.className='badge '+cls; pe.textContent=arrow(cls)+plbl(sim,orig);
+}
+
+function calcOrig(){
+  const dias=getDias(),mod=getMOD(),hhAn=dias*8;
+  const origHH=ORIG.gen*hhAn;
+  const tp=prodCurrent['GEN0100']||0;
+  const origTasa=tp>0?origHH/tp:0;
+  const origIncid=ORIG.gen/mod;
+  return{origHH,origTasa,origIncid,hhAn,dias,mod};
+}
+function calcSim(){
+  const dias=getDias(),mod=getMOD(),hhAn=dias*8;
+  const bySecActive={};
+  Object.keys(SECTORES).forEach(s=>bySecActive[s]=0);
+  let simGen=0;
+  ITEMS.forEach(item=>{const n=activeCount(item);bySecActive[item.sector]+=n;simGen+=n;});
+  const bySecHH={},bySecTasa={},bySecTasaCargar={};
+  let simHH=0;
+  Object.keys(SECTORES).forEach(s=>{
+    bySecHH[s]=bySecActive[s]*hhAn;simHH+=bySecHH[s];
+    const prod=prodCurrent[s]||0;
+    bySecTasa[s]=prod>0?bySecHH[s]/prod:0;
+    bySecTasaCargar[s]=(prod>0&&bySecHH[s]>0)?prod/bySecHH[s]:0;
+  });
+  const tp=prodCurrent['GEN0100']||0;
+  const simTasa=tp>0?simHH/tp:0;
+  const simIncid=simGen/mod;
+  return{bySecActive,bySecHH,bySecTasa,bySecTasaCargar,simGen,simHH,simTasa,simIncid,hhAn,dias,mod};
+}
+
+function updateAll(){
+  const o=calcOrig(), s=calcSim(), mod=getMOD();
+
+  // KPIs
+  $('kpi-gen').textContent=fmtAR(ORIG.gen);
+  $('kpi-hh').textContent=fmtAR(o.origHH);
+  $('f-hh').textContent=`${ORIG.gen} pers × ${o.dias} días × 8 hs = ${fmtAR(o.origHH)} hs`;
+
+  $('kpi-mod').textContent=fmtAR(mod);
+  $('kpi-incid').textContent=(o.origIncid*100).toFixed(1).replace('.',',')+' %';
+  $('f-incid').textContent=`${ORIG.gen} pers ÷ ${fmtAR(mod)} MOD = ${(o.origIncid*100).toFixed(1).replace('.',',')}%`;
+
+  // Referencia de comparación (originales absolutos del plan)
+  const refHH   = ORIG.gen*ORIG.dias*8;
+  const refTasa = prodCurrent['GEN0100']>0?refHH/prodCurrent['GEN0100']:0;
+  const refIncid = ORIG.gen/ORIG.mod;
+
+  // SIM — Total Genérico
+  $('s-orig-gen').textContent=fmtAR(ORIG.gen);
+  $('s-sim-gen').textContent=fmtAR(s.simGen);
+  setBadge('s-delta-gen','s-pct-gen',s.simGen,ORIG.gen,0,false);
+  $('s-f-gen').textContent='Σ personas activas';
+
+  // SIM — Hs Hombre
+  $('s-orig-hh').textContent=fmtAR(refHH);
+  $('s-sim-hh').textContent=fmtAR(s.simHH);
+  setBadge('s-delta-hh','s-pct-hh',s.simHH,refHH,0,false);
+  $('s-f-hh').textContent=`${s.simGen} × ${s.dias} × 8`;
+
+
+
+  // SIM — Dotación MOD (invertida: bajar = bueno = verde)
+  $('s-orig-mod').textContent=fmtAR(ORIG.mod);
+  $('s-sim-mod').textContent=fmtAR(mod);
+  setBadge('s-delta-mod','s-pct-mod',mod,ORIG.mod,0,true);
+  $('s-f-mod').textContent='Dotación MOD editable';
+
+  // SIM — Incidencia
+  $('s-orig-incid').textContent=(refIncid*100).toFixed(1).replace('.',',')+' %';
+  $('s-sim-incid').textContent=(s.simIncid*100).toFixed(1).replace('.',',')+' %';
+  setBadge('s-delta-incid','s-pct-incid',s.simIncid,refIncid,3,false);
+  $('s-f-incid').textContent=`${s.simGen} ÷ ${fmtAR(mod)} MOD`;
+
+  renderTasaSectores();
+  renderSectorBarChart();
+  // Botones modificar params
+  $('btn-mod-dias').disabled=(getDias()===ORIG.dias);
+  $('btn-mod-mod').disabled=(getMOD()===ORIG.mod);
+
+  // Tabla tasas
+  const tbody=$('rates-body'); tbody.innerHTML='';
+  sectorOrder.forEach(code=>{
+    const sec=SECTORES[code];
+    const tc=s.bySecTasa[code],tca=s.bySecTasaCargar[code];
+    const tr=document.createElement('tr');
+    tr.innerHTML=`<td><span class="dot" style="background:${sec.color}"></span>${sec.name}</td>
+      <td>${s.bySecActive[code]}</td><td>${fmtAR(s.hhAn)}</td><td>${fmtAR(s.bySecHH[code])}</td>
+      <td>${prodCurrent[code]>0?fmtAR(prodCurrent[code],1):'—'}</td>
+      <td>${tc>0?tc.toFixed(4).replace('.',','):'—'}</td>
+      <td style="color:${sec.color};font-weight:700">${tca>0?tca.toFixed(4).replace('.',','):'—'}</td>`;
+    tbody.appendChild(tr);
+  });
+}
+
+function updateItemHeader(item){
+  const n=activeCount(item), el=$(`count-${item.id}`);
+  const extra=extraState[item.id]||0;
+  const base=state[item.id].filter(Boolean).length;
+  if(el){
+    el.textContent=extra>0?`${n} / ${item.qty}+${extra} activas`:`${n} / ${item.qty} activa${n!==1?'s':''}`;
+    el.style.color=n>0?SECTORES[item.sector].color:'#888780';
+  }
+  // Update control buttons
+  const addBtn=$(`add-${item.id}`), remBtn=$(`rem-${item.id}`), extLbl=$(`ext-${item.id}`);
+  if(addBtn) addBtn.disabled=(extra>=MAX_EXTRA);
+  if(remBtn) remBtn.disabled=(extra<=0);
+  if(extLbl) extLbl.textContent=extra>0?`+${extra}`:'';
+}
+function resetAll(){
+  ORIG.gen=FACTORY.gen; ORIG.dias=FACTORY.dias; ORIG.mod=FACTORY.mod;
+  Object.keys(FACTORY.prod).forEach(k=>{ ORIG.prod[k]=FACTORY.prod[k]; prodCurrent[k]=FACTORY.prod[k]; });
+  $('inp-dias').value=FACTORY.dias; $('inp-mod').value=FACTORY.mod;
+  $('orig-label-dias').textContent=FACTORY.dias; $('orig-label-mod').textContent=FACTORY.mod;
+  Object.keys(SECTORES).forEach(code=>{
+    const inp=$(`prod-${code}`); if(inp) inp.value=FACTORY.prod[code];
+    const lbl=$(`orig-label-prod-${code}`); if(lbl) lbl.textContent=fmtAR(FACTORY.prod[code],2);
+  });
+  ITEMS.forEach(item=>{
+    state[item.id]=Array(item.qty).fill(true);
+    extraState[item.id]=0;
+  });
+  renderItems();
+  updateAll();
+}
+
+function renderProdGrid(){
+  const grid=$('prod-grid'); grid.innerHTML='';
+  sectorOrder.forEach(code=>{
+    const sec=SECTORES[code];
+    const card=document.createElement('div'); card.className='prod-card';
+    card.innerHTML=`<div class="prod-header"><span class="prod-dot" style="background:${sec.color}"></span><span class="prod-name">${sec.name} · ${code}</span></div>
+      <div class="prod-input-row"><input type="number" id="prod-${code}" value="${ORIG.prod[code]}" min="0" step="0.01"><span class="prod-unit">tn / año</span></div>
+      <div class="prod-footer"><span class="prod-orig">Original: <span id="orig-label-prod-${code}">${fmtAR(ORIG.prod[code],2)}</span> tn</span>
+      <button class="btn-modify" id="btn-mod-prod-${code}" disabled>✓ Modificar</button></div>`;
+    grid.appendChild(card);
+    const inp=card.querySelector(`#prod-${code}`), btn=card.querySelector(`#btn-mod-prod-${code}`);
+    inp.addEventListener('input',()=>{ prodCurrent[code]=parseFloat(inp.value)||0; btn.disabled=(Math.abs(prodCurrent[code]-ORIG.prod[code])<0.001); updateAll(); });
+    btn.addEventListener('click',()=>{ ORIG.prod[code]=prodCurrent[code]; $(`orig-label-prod-${code}`).textContent=fmtAR(ORIG.prod[code],2); btn.disabled=true; updateAll(); });
+  });
+}
+
+
+// ── RENDER TASA CUOTA POR SECTOR ─────────────────────────────────────────────
+function renderTasaSectores(){
+  const kpiGrid=$('tasa-kpi-grid'), simGrid=$('tasa-sim-grid');
+  if(!kpiGrid||!simGrid) return;
+  kpiGrid.innerHTML=''; simGrid.innerHTML='';
+
+  const s=calcSim();
+  const refHH=ORIG.gen*ORIG.dias*8;
+
+  sectorOrder.forEach(code=>{
+    const sec=SECTORES[code];
+    const origTc = prodCurrent[code]>0 ? (ORIG.gen>0 ? (ORIG.gen * ORIG.dias * 8 * (ITEMS.filter(i=>i.sector===code).reduce((a,i)=>a+i.qty,0)/ORIG.gen) / prodCurrent[code]) : 0) : 0;
+    // Simulated tasa cuota for this sector
+    const simTc = s.bySecTasa[code]||0;
+    // Original tasa cuota: using original persons per sector * original HH / prod
+    const origPers = ITEMS.filter(i=>i.sector===code).reduce((a,i)=>a+i.qty,0);
+    const origHHSec = origPers * ORIG.dias * 8;
+    const origTcReal = prodCurrent[code]>0 ? origHHSec/prodCurrent[code] : 0;
+
+    // KPI card
+    const kpiDiv=document.createElement('div');
+    kpiDiv.className='kpi';
+    kpiDiv.innerHTML=`
+      <div class="kpi-label" style="display:flex;align-items:center;gap:5px">
+        <span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${sec.color};flex-shrink:0"></span>
+        ${sec.name}
+      </div>
+      <div class="kpi-val" style="color:${sec.color};font-size:20px" id="ktasa-${code}">${origTcReal>0?origTcReal.toFixed(4).replace('.',','):'—'}</div>
+      <div class="kpi-formula" id="kf-${code}">${origPers} pers × ${ORIG.dias} días × 8 hs = ${fmtAR(origHHSec)} Hs · ÷ ${fmtAR(prodCurrent[code],1)} tn</div>
+    `;
+    kpiGrid.appendChild(kpiDiv);
+
+    // SIM card
+    const simDiv=document.createElement('div');
+    simDiv.className='sim-card';
+    const activePers=s.bySecActive[code]||0;
+    const cls=bCls(simTc,origTcReal,true);
+    const arw=arrow(cls);
+    const simHHSec = activePers * s.dias * 8;
+    const hhDiff = simHHSec - origHHSec;
+    const hhDiffCls = hhDiff > 0 ? 'bad' : hhDiff < 0 ? 'good' : 'neutral';
+    const hhDiffArrow = hhDiff > 0 ? '↑ ' : hhDiff < 0 ? '↓ ' : '';
+    const hhDiffLbl = hhDiff !== 0 ? hhDiffArrow + (hhDiff>0?'+':'') + fmtAR(hhDiff) + ' Hs' : '= 0 Hs';
+    simDiv.innerHTML=`
+      <div class="sim-card-label">Simulado</div>
+      <div class="sim-row">
+        <span class="sim-orig">${origTcReal>0?origTcReal.toFixed(4).replace('.',','):'—'}</span>
+        <span class="sim-arrow">→</span>
+        <span class="sim-new" style="color:${sec.color}">${simTc>0?simTc.toFixed(4).replace('.',','):'—'}</span>
+      </div>
+      <div class="sim-badges">
+        <span class="badge ${cls}" id="stasa-d-${code}">${simTc>0?arw+dlbl(simTc,origTcReal,4):'—'}</span>
+        <span class="badge ${cls}" id="stasa-p-${code}">${simTc>0?arw+plbl(simTc,origTcReal):'—'}</span>
+        <span class="badge ${hhDiffCls}" title="Diferencia Hs. Hombre">${hhDiffLbl}</span>
+      </div>
+      <div class="sim-formula">${fmtAR(origHHSec)} Hs → ${fmtAR(simHHSec)} Hs (${activePers} pers × ${s.dias} días × 8)</div>
+    `;
+    simGrid.appendChild(simDiv);
+  });
+}
+
+function renderItems(){
+  const list=$('items-list'); list.innerHTML='';
+  let lastSector=null;
+  ITEMS.forEach(item=>{
+    const sec=SECTORES[item.sector];
+    if(item.sector!==lastSector){
+      const sep=document.createElement('div'); sep.className='sector-sep';
+      sep.innerHTML=`<span class="sdot" style="background:${sec.color}"></span>${sec.name} — ${sectorTotals[item.sector]} personas`;
+      list.appendChild(sep); lastSector=item.sector;
+    }
+    const card=document.createElement('div'); card.className='item-card';
+    const n=activeCount(item);
+    const extra=extraState[item.id]||0;
+    card.innerHTML=`
+      <div class="item-header">
+        <span class="item-sector-dot" style="background:${sec.color}"></span>
+        <span class="item-name">${item.nombre}</span>
+        <span class="item-meta">${item.sector}</span>
+        <span class="item-active-count" id="count-${item.id}" style="color:${sec.color}">${n} / ${item.qty} activa${n!==1?'s':''}</span>
+      </div>
+      <div class="persons-row" id="persons-${item.id}"></div>
+      <div class="item-controls">
+        <button class="ctrl-btn add" id="add-${item.id}" title="Agregar operario (máx +${MAX_EXTRA})" ${extra>=MAX_EXTRA?'disabled':''}>+</button>
+        <button class="ctrl-btn rem" id="rem-${item.id}" title="Quitar operario agregado" ${extra<=0?'disabled':''}>−</button>
+        <span class="ctrl-label">Agregar operario <span style="color:#8a99a8;font-style:italic;font-weight:400">(Usar en caso de Sumar Operario)</span></span>
+        <span class="ctrl-extra" id="ext-${item.id}">${extra>0?'+'+extra:''}</span>
+      </div>`;
+    const persRow=card.querySelector(`#persons-${item.id}`);
+
+    // Existing persons (toggleable)
+    state[item.id].forEach((isOn,idx)=>{
+      const btn=document.createElement('button');
+      btn.className='person-btn'+(isOn?'':' off');
+      btn.title=`Persona ${idx+1} — clic para activar/desactivar`;
+      btn.innerHTML=personSVG(sec.color);
+      btn.addEventListener('click',()=>{
+        state[item.id][idx]=!state[item.id][idx];
+        btn.classList.toggle('off',!state[item.id][idx]);
+        updateItemHeader(item); updateAll();
+      });
+      persRow.appendChild(btn);
+    });
+
+    // Extra persons (shown with amber outline, always active)
+    function refreshExtras(){
+      // Remove existing extra buttons
+      persRow.querySelectorAll('.person-btn.extra').forEach(b=>b.remove());
+      const ex=extraState[item.id]||0;
+      for(let i=0;i<ex;i++){
+        const btn=document.createElement('button');
+        btn.className='person-btn extra';
+        btn.title=`Operario extra ${i+1} (agregado) — clic para quitar`;
+        btn.innerHTML=personSVG('#f29900');
+        btn.addEventListener('click',()=>{
+          if(extraState[item.id]>0){
+            extraState[item.id]--;
+            refreshExtras();
+            updateItemHeader(item); updateAll();
+          }
+        });
+        persRow.appendChild(btn);
+      }
+      const addBtn=$(`add-${item.id}`), remBtn=$(`rem-${item.id}`), extLbl=$(`ext-${item.id}`);
+      if(addBtn) addBtn.disabled=(extraState[item.id]>=MAX_EXTRA);
+      if(remBtn) remBtn.disabled=(extraState[item.id]<=0);
+      if(extLbl) extLbl.textContent=extraState[item.id]>0?'+'+extraState[item.id]:'';
+    }
+    refreshExtras();
+
+    // Add button
+    card.querySelector(`#add-${item.id}`).addEventListener('click',()=>{
+      if(extraState[item.id]<MAX_EXTRA){ extraState[item.id]++; refreshExtras(); updateItemHeader(item); updateAll(); }
+    });
+    // Remove button
+    card.querySelector(`#rem-${item.id}`).addEventListener('click',()=>{
+      if(extraState[item.id]>0){ extraState[item.id]--; refreshExtras(); updateItemHeader(item); updateAll(); }
+    });
+
+    list.appendChild(card);
+  });
+}
+
+function initDashboard(){
+  $('inp-dias').addEventListener('input',()=>{ $('btn-mod-dias').disabled=(getDias()===ORIG.dias); updateAll(); });
+  $('inp-mod').addEventListener('input',()=>{ $('btn-mod-mod').disabled=(getMOD()===ORIG.mod); updateAll(); });
+  $('btn-mod-dias').addEventListener('click',()=>{ ORIG.dias=getDias(); $('orig-label-dias').textContent=ORIG.dias; $('btn-mod-dias').disabled=true; updateAll(); });
+  $('btn-mod-mod').addEventListener('click',()=>{ ORIG.mod=getMOD(); $('orig-label-mod').textContent=ORIG.mod; $('btn-mod-mod').disabled=true; updateAll(); });
+  $('btn-reset').addEventListener('click',resetAll);
+  renderProdGrid();
+  renderItems();
+  updateAll();
+  renderTasaSectores();
+}
+
+
+// ── SECTOR BAR CHART (3D stacked horizontal) ─────────────────────────────────
+function renderSectorBarChart() {
+  const container = document.getElementById('sector-bar-chart');
+  if (!container) return;
+
+  // Build sector active counts from current sim state
+  const bySecActive = {};
+  Object.keys(SECTORES).forEach(s => bySecActive[s] = 0);
+  ITEMS.forEach(item => { bySecActive[item.sector] += activeCount(item); });
+
+  // Original counts per sector (from ITEMS_RAW)
+  const bySecOrig = {};
+  Object.keys(SECTORES).forEach(s => bySecOrig[s] = 0);
+  ITEMS.forEach(item => { bySecOrig[item.sector] += item.qty; });
+
+  // Sort sectors by current active count DESC
+  const sorted = Object.keys(SECTORES).sort((a, b) => bySecActive[b] - bySecActive[a]);
+
+  // Max value for scale (base only, diff is additive in width)
+  const maxVal = Math.max(...sorted.map(s => Math.max(bySecActive[s], bySecOrig[s])), 1);
+
+  container.innerHTML = '';
+
+  sorted.forEach(code => {
+    const sec = SECTORES[code];
+    const orig = bySecOrig[code];
+    const curr = bySecActive[code];
+    const diff = curr - orig;
+
+    const row = document.createElement('div');
+    row.className = 'bar-row';
+
+    // Label
+    const lbl = document.createElement('div');
+    lbl.className = 'bar-label';
+    lbl.title = sec.name;
+    lbl.textContent = sec.name;
+    row.appendChild(lbl);
+
+    // Bar track
+    const track = document.createElement('div');
+    track.className = 'bar-track';
+
+    // Base segment width = min(orig, curr) relative to max
+    const baseVal = Math.min(orig, curr);
+    const basePct = (baseVal / maxVal) * 100;
+
+    // Segment: base
+    const segBase = document.createElement('div');
+    segBase.className = 'bar-seg bar-seg-base';
+    segBase.style.width = basePct + '%';
+    segBase.style.background = `linear-gradient(180deg, ${lighten(sec.color, 30)} 0%, ${sec.color} 60%, ${darken(sec.color, 20)} 100%)`;
+    // 3D top face
+    segBase.style.setProperty('--top-color', lighten(sec.color, 50));
+    segBase.style.setProperty('--right-color', darken(sec.color, 35));
+    // Apply pseudo via inline style trick — use box-shadow for 3D
+    segBase.style.boxShadow = `inset 0 2px 0 ${lighten(sec.color, 50)}, 3px 0 0 ${darken(sec.color, 35)}, 3px -4px 0 ${lighten(sec.color, 20)}, 0 -4px 0 ${lighten(sec.color, 40)}`;
+    track.appendChild(segBase);
+
+    // Diff segment
+    if (diff !== 0) {
+      const diffPct = (Math.abs(diff) / maxVal) * 100;
+      const segDiff = document.createElement('div');
+      segDiff.className = 'bar-seg bar-seg-diff ' + (diff > 0 ? 'positive' : 'negative');
+      segDiff.style.width = diffPct + '%';
+      const dColor = diff > 0 ? '#f29900' : '#e53935';
+      const dLight = diff > 0 ? '#ffd54f' : '#ef9a9a';
+      const dDark  = diff > 0 ? '#e65100' : '#b71c1c';
+      segDiff.style.background = `linear-gradient(180deg, ${dLight} 0%, ${dColor} 60%, ${dDark} 100%)`;
+      segDiff.style.boxShadow = `inset 0 2px 0 ${dLight}, 3px 0 0 ${dDark}, 3px -4px 0 ${dLight}, 0 -4px 0 ${dLight}`;
+      track.appendChild(segDiff);
+    }
+
+    row.appendChild(track);
+
+    // Value label
+    const valLbl = document.createElement('div');
+    valLbl.className = 'bar-val';
+    valLbl.textContent = curr;
+    row.appendChild(valLbl);
+
+    // Diff badge
+    const badge = document.createElement('div');
+    badge.className = 'bar-diff-badge ' + (diff > 0 ? 'pos' : diff < 0 ? 'neg' : 'zero');
+    badge.textContent = diff > 0 ? '+' + diff : diff === 0 ? '=' : '' + diff;
+    badge.title = `Original: ${orig} · Simulado: ${curr}`;
+    row.appendChild(badge);
+
+    container.appendChild(row);
+  });
+}
+
+function lighten(hex, pct) {
+  const n = parseInt(hex.replace('#',''), 16);
+  let r = (n>>16)&255, g = (n>>8)&255, b = n&255;
+  r = Math.min(255, Math.round(r + (255-r)*pct/100));
+  g = Math.min(255, Math.round(g + (255-g)*pct/100));
+  b = Math.min(255, Math.round(b + (255-b)*pct/100));
+  return '#'+[r,g,b].map(x=>x.toString(16).padStart(2,'0')).join('');
+}
+function darken(hex, pct) {
+  const n = parseInt(hex.replace('#',''), 16);
+  let r = (n>>16)&255, g = (n>>8)&255, b = n&255;
+  r = Math.max(0, Math.round(r * (1 - pct/100)));
+  g = Math.max(0, Math.round(g * (1 - pct/100)));
+  b = Math.max(0, Math.round(b * (1 - pct/100)));
+  return '#'+[r,g,b].map(x=>x.toString(16).padStart(2,'0')).join('');
+}
+
+// ── ITEMS BAR CHART ──────────────────────────────────────────────────────────
+let itemsChart = null;
+
+// Original quantities per item (immutable reference)
+const ITEMS_ORIG_QTY = {};
+ITEMS.forEach(item => { ITEMS_ORIG_QTY[item.id] = item.qty; });
+
+
+// ── LOGIN ────────────────────────────────────────────────────────────────────
+(function(){
+  const PASSWORD = 'control';
+  const inp = document.getElementById('login-pass');
+  const btn = document.getElementById('login-btn');
+  const err = document.getElementById('login-error');
+  const eyeBtn = document.getElementById('login-eye-btn');
+
+  function tryLogin(){
+    if(inp.value === PASSWORD){
+      document.getElementById('login-screen').style.display='none';
+      document.getElementById('dashboard-content').style.display='block';
+      initDashboard();
+    } else {
+      err.textContent='Contraseña incorrecta. Intentá de nuevo.';
+      inp.classList.add('error');
+      inp.value='';
+      setTimeout(()=>inp.classList.remove('error'),500);
+    }
+  }
+
+  btn.addEventListener('click', tryLogin);
+  inp.addEventListener('keydown', e=>{ if(e.key==='Enter') tryLogin(); });
+  eyeBtn.addEventListener('click',()=>{
+    const show = inp.type==='password';
+    inp.type = show ? 'text' : 'password';
+    eyeBtn.querySelector('svg').innerHTML = show
+      ? '<line x1="1" y1="1" x2="23" y2="23"/><path d="M10.73 5.08A10.43 10.43 0 0112 5c7 0 11 7 11 7a13.16 13.16 0 01-1.67 2.68"/><path d="M6.61 6.61A13.526 13.526 0 001 12s4 8 11 8a9.74 9.74 0 005.39-1.61"/>'
+      : '<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>';
+  });
+})();
+
+</script>
+</body>
+</html>
